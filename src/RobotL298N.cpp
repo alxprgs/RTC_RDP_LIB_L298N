@@ -8,16 +8,7 @@ static inline uint8_t u8abs16(int16_t v) {
 
 static inline int16_t rampTo(int16_t cur, int16_t tgt, uint16_t step) {
   if (cur == tgt) return cur;
-
-  if (cur < tgt) {
-    int32_t v = (int32_t)cur + (int32_t)step;
-    if (v > tgt) v = tgt;
-    return (int16_t)v;
-  } else {
-    int32_t v = (int32_t)cur - (int32_t)step;
-    if (v < tgt) v = tgt;
-    return (int16_t)v;
-  }
+  return (cur < tgt) ? (cur + step) : (cur - step);
 }
 
 void L298Motor::apply(int16_t sp, bool brakeIfZero) {
@@ -53,6 +44,7 @@ void L298Motor::apply(int16_t sp, bool brakeIfZero) {
     analogWrite(_p.en, 0);
   }
 }
+
 void PowerManager::updateModule(L298Dual& mod, uint32_t dtMs, bool brakeIfZero, uint16_t& heatAccum) {
   if (dtMs == 0) dtMs = 1;
 
@@ -72,8 +64,7 @@ void PowerManager::updateModule(L298Dual& mod, uint32_t dtMs, bool brakeIfZero, 
     if (load > 20) {
       uint32_t add = (uint32_t)load * (uint32_t)dtMs / 12UL;
       uint32_t h = (uint32_t)heatAccum + add;
-      if (h > 60000UL) h = 60000UL;
-      heatAccum = (uint16_t)h;
+      heatAccum = (h > 60000UL) ? 60000UL : (uint16_t)h;
     } else {
       int32_t cool = (int32_t)heatAccum - (int32_t)dtMs * 8;
       heatAccum = (cool < 0) ? 0 : (uint16_t)cool;
@@ -95,8 +86,7 @@ void PowerManager::updateModule(L298Dual& mod, uint32_t dtMs, bool brakeIfZero, 
   if (limit > 255) limit = 255;
 
   uint32_t step32 = (uint32_t)_ramp * (uint32_t)dtMs / 1000UL;
-  if (step32 < 1) step32 = 1;
-  if (step32 > 255) step32 = 255;
+  step32 = constrain(step32, 1, 255);
   uint16_t step = (uint16_t)step32;
 
   auto applyOne = [&](L298Motor& m) {
@@ -112,6 +102,7 @@ void PowerManager::updateModule(L298Dual& mod, uint32_t dtMs, bool brakeIfZero, 
   applyOne(mod.A);
   applyOne(mod.B);
 }
+
 void CrossDrive::setMotorInvert(uint8_t motorId, bool inv) {
   switch (motorId) {
     case 1: _y.A.setInverted(inv); break;

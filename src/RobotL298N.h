@@ -40,7 +40,7 @@ public:
   void apply(int16_t sp, bool brakeIfZero);
 
 private:
-  MotorPins _p{};
+  MotorPins _p{}; 
   bool _inv = false;
 
   int16_t _target  = 0;
@@ -122,6 +122,12 @@ public:
 
   void update(bool brakeIfZero = false);
 
+  uint16_t getHeatX() const { return _heatX; }
+  uint16_t getHeatY() const { return _heatY; }
+  uint16_t getCurrentLimit() const { return _currentLimit; }
+  uint16_t getCurrentLimitX() const { return _currentLimitX; }
+  uint16_t getCurrentLimitY() const { return _currentLimitY; }
+
 private:
   L298Dual& _x;
   L298Dual& _y;
@@ -133,6 +139,9 @@ private:
 
   uint16_t _heatX = 0;
   uint16_t _heatY = 0;
+  uint16_t _currentLimit = 255;
+  uint16_t _currentLimitX = 255;
+  uint16_t _currentLimitY = 255;
 
   int16_t _m1 = 0;
   int16_t _m2 = 0;
