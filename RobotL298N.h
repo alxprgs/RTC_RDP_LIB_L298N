@@ -152,3 +152,44 @@ private:
 
   void applyTargets();
 };
+
+class L298Pump {
+public:
+  L298Pump() = default;
+  explicit L298Pump(MotorPins p) : _p(p) {}
+
+  void begin() {
+    pinMode(_p.en, OUTPUT);
+    pinMode(_p.in1, OUTPUT);
+    pinMode(_p.in2, OUTPUT);
+    digitalWrite(_p.in1, LOW);
+    digitalWrite(_p.in2, HIGH);
+    analogWrite(_p.en, 0);
+    _state = false;
+  }
+
+  void on() {
+    digitalWrite(_p.in1, LOW);
+    digitalWrite(_p.in2, HIGH);
+    analogWrite(_p.en, 255);
+    _state = true;
+  }
+
+  void off() {
+    digitalWrite(_p.in1, LOW);
+    digitalWrite(_p.in2, LOW);
+    analogWrite(_p.en, 0);
+    _state = false;
+  }
+
+  void set(bool state) {
+    if (state) on();
+    else off();
+  }
+
+  bool state() const { return _state; }
+
+private:
+  MotorPins _p{};
+  bool _state = false;
+};
